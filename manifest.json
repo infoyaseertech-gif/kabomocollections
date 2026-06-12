@@ -1,0 +1,26 @@
+{
+  "name": "Kabomo Collections",
+  "short_name": "Kabomo",
+  "description": "Kabomo Collections POS — Wear Love, Wear Luxury",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1f44",
+  "theme_color": "#0a1f44",
+  "icons": [
+    {
+      "src": "/kabomo_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/kabomo_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "lang": "en"
+}
