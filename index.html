@@ -8,8 +8,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kabomo Collections">
 <meta name="theme-color" content="#0a1f44">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/kabomo_icon_192.png">
 <title>Kabomo Collections</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -350,6 +348,9 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .chart-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue2),var(--blue));min-height:4px;transition:height .6s ease;}
 .chart-lbl{font-size:9px;color:var(--muted);}
 </style>
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="/kabomo_icon_192.png">
 </head>
 <body>
 
@@ -1665,8 +1666,9 @@ function addChat(type,text,time){
     SS('s-login');
   },3000);
 })();
+</script>
 
-// ═══ SERVICE WORKER ═══
+<script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
     navigator.serviceWorker.register('/sw.js')
@@ -1674,7 +1676,6 @@ if('serviceWorker' in navigator){
       .catch(function(err){console.log('SW failed:',err);});
   });
 }
-
 </script>
 </body>
 </html>
