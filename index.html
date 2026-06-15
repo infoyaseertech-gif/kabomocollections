@@ -347,8 +347,11 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
 .chart-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue2),var(--blue));min-height:4px;transition:height .6s ease;}
 .chart-lbl{font-size:9px;color:var(--muted);}
+.sp-download{margin-top:28px;z-index:2;animation:fadeIn .5s 1.3s both ease;}
+.sp-download a{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#c9a84c,#f0d080);color:#0a1f44;padding:13px 28px;border-radius:50px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,0.4);}
 </style>
 <link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/kabomo_icon_192.png">
 </head>
 <body>
@@ -386,10 +389,7 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
   <div class="sp-div"><span class="sp-slogan">Wear Love, Wear Luxury</span></div>
   <div class="sp-dots"><div class="sp-dot a"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
 <div class="sp-download">
-  <a href="https://drive.google.com/uc?export=download&id=1gFfq66xLsiJqYH3AFbdoBbwAzM3tgS-b" target="_blank" rel="noopener">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:18px;height:18px;fill:#0a1f44;vertical-align:middle;margin-right:6px"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>
-    Download App
-  </a>
+  <a href="https://drive.google.com/uc?export=download&id=1gFfq66xLsiJqYH3AFbdoBbwAzM3tgS-b" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:18px;height:18px;fill:#0a1f44;vertical-align:middle;margin-right:6px"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>Download App</a>
 </div>
 </div>
 
@@ -875,9 +875,8 @@ const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
 const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
 const hideLD=()=>document.getElementById('LD').classList.remove('show');
-const toast=msg=>{const t=document.getElementById('TOAST');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}};
-const safeSet=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-const setErr=(id,msg)=>{const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block';}};
+const toast=msg=>{const t=document.getElementById('TOAST');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);};
+const setErr=(id,msg)=>{const e=document.getElementById(id);e.textContent=msg;e.style.display='block';};
 const clErr=id=>document.getElementById(id).style.display='none';
 const hashP=p=>{let h=0;for(let c of p){h=(h<<5)-h+c.charCodeAt(0);h|=0;}return h.toString(36);};
 
@@ -1226,12 +1225,12 @@ function updatePv(){
   const qty=parseInt(document.getElementById('si-qty').value)||1;
   const p=parseFloat(document.getElementById('si-price').value)||0;
   const it=A.catalog.find(i=>i.id===id);
-  if(!it||!p){safeSet('pv-tot','₦0');safeSet('pv-prof','₦0');safeSet('pv-marg','0%');return;}
+  if(!it||!p){document.getElementById('pv-tot').textContent='₦0';document.getElementById('pv-prof').textContent='₦0';document.getElementById('pv-marg').textContent='0%';return;}
   const profit=(p-it.cost_price)*qty;
   const marg=it.cost_price>0?Math.round(((p-it.cost_price)/it.cost_price)*100):0;
-  safeSet('pv-tot',fmt(p*qty));
-  safeSet('pv-prof',fmt(profit));
-  safeSet('pv-marg',marg+'%');
+  document.getElementById('pv-tot').textContent=fmt(p*qty);
+  document.getElementById('pv-prof').textContent=fmt(profit);
+  document.getElementById('pv-marg').textContent=marg+'%';
 }
 
 async function confirmSale(){
@@ -1348,27 +1347,41 @@ function buildInvoice(){
   const showProfit=_invoiceMode==='owner';
   let html='';
   if(d.type==='sale'){
+    const it=d.it||{};
+    const emoji=it.emoji||'💎';
+    const iname=it.name||d.name||'Item';
+    const cp=Number(it.cost_price)||0;
+    const margin=cp>0?Math.round(((Number(d.price)-cp)/cp)*100):0;
     html=`
-      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t}</span></div>
+      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t||''}</span></div>
       ${d.cust?`<div class="rrow m"><span>Customer</span><span>${d.cust}</span></div>`:''}
-      <div class="rrow m"><span>Payment Method</span><span>${d.pay}</span></div>
+      <div class="rrow m"><span>Payment Method</span><span>${d.pay||'Cash'}</span></div>
       ${d.notes?`<div class="rrow m"><span>Notes</span><span>${d.notes}</span></div>`:''}
       <hr class="rdiv">
-      <div class="rrow"><span>${d.it.emoji||'💎'} ${d.it.name}</span><span>${fmt(d.price)}</span></div>
-      <div class="rrow m"><span>Quantity</span><span>× ${d.qty}</span></div>
-      <div class="rrow tot"><span>Total Paid</span><span>${fmt(d.total)}</span></div>
-      ${showProfit?`<div class="rprofit">Owner copy — Profit: ${fmt(d.profit)} (${d.it.cost_price>0?Math.round(((d.price-d.it.cost_price)/d.it.cost_price)*100):0}% margin) 🎉</div>`:''}`;
+      <div class="rrow"><span>${emoji} ${iname}</span><span>${fmt(Number(d.price)||0)}</span></div>
+      <div class="rrow m"><span>Quantity</span><span>× ${d.qty||1}</span></div>
+      <div class="rrow tot"><span>Total Paid</span><span>${fmt(Number(d.total)||0)}</span></div>
+      ${showProfit?`<div class="rprofit">Owner copy — Profit: ${fmt(Number(d.profit)||0)} (${margin}% margin) 🎉</div>`:''}`;
   }else{
+    const cost=Number(d.cost)||0;
+    const margin=Number(d.margin)||0;
+    const mpct=cost>0?Math.round((margin/cost)*100):0;
     html=`
-      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t}</span></div>
+      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t||''}</span></div>
       <div class="rrow m"><span>Supplier</span><span>Kano Market</span></div>
       <hr class="rdiv">
-      <div class="rrow"><span>${d.emoji} ${d.name}</span><span>${fmt(d.cost)}/item</span></div>
-      <div class="rrow m"><span>Quantity bought</span><span>× ${d.qty}</span></div>
-      <div class="rrow tot"><span>Total Spent</span><span>${fmt(d.total)}</span></div>
-      ${showProfit?`<div class="rprofit">Expected profit/item: ${fmt(d.margin)} (${Math.round((d.margin/d.cost)*100)}% margin)</div>`:''}`;
+      <div class="rrow"><span>${d.emoji||'📦'} ${d.name||'Item'}</span><span>${fmt(cost)}/item</span></div>
+      <div class="rrow m"><span>Quantity bought</span><span>× ${d.qty||1}</span></div>
+      <div class="rrow tot"><span>Total Spent</span><span>${fmt(Number(d.total)||0)}</span></div>
+      ${showProfit?`<div class="rprofit">Expected profit/item: ${fmt(margin)} (${mpct}% margin)</div>`:''}`;
   }
-  const rb=document.getElementById('receipt-body');if(rb)rb.innerHTML=html;
+  // Safe setter with retry if modal not yet visible
+  const trySet=()=>{
+    const rb=document.getElementById('receipt-body');
+    if(rb){rb.innerHTML=html;}
+    else{setTimeout(trySet,100);}
+  };
+  trySet();
 }
 
 function doWA(){
@@ -1484,8 +1497,8 @@ async function saveDebt(){
 function updateDebtStats(){
   const active=A.debts.filter(d=>!d.is_settled);
   const total=active.reduce((s,d)=>s+(d.amount_owed-d.amount_paid),0);
-  safeSet('st-debt',fmt(total));
-  safeSet('debt-count-lbl',active.length+' active debts · '+fmt(total)+' owed');
+  document.getElementById('st-debt').textContent=fmt(total);
+  document.getElementById('debt-count-lbl').textContent=active.length+' active debts · '+fmt(total)+' owed';
 }
 
 async function openDebtList(){
@@ -1495,7 +1508,7 @@ async function openDebtList(){
   const el=document.getElementById('debtlist-body');
   const active=debts.filter(d=>!d.is_settled);
   const total=active.reduce((s,d)=>s+(d.amount_owed-d.amount_paid),0);
-  safeSet('debtlist-sub',active.length+' active · '+fmt(total)+' total owed');
+  document.getElementById('debtlist-sub').textContent=active.length+' active · '+fmt(total)+' total owed';
   if(!debts.length){el.innerHTML='<div class="empty"><div class="empty-icon">🤝</div><div class="empty-txt">No debt records yet.</div></div>';return;}
   el.innerHTML=debts.map(d=>{
     const bal=d.amount_owed-d.amount_paid;
@@ -1574,11 +1587,11 @@ function renderInsights(){
   const margins=A.catalog.filter(i=>i.cost_price>0).map(i=>((i.sell_price-i.cost_price)/i.cost_price)*100);
   const avgMargin=margins.length?Math.round(margins.reduce((a,b)=>a+b,0)/margins.length):0;
   const topByProfit=A.catalog.map(i=>{return {name:i.name,margin:i.sell_price-i.cost_price};}).sort((a,b)=>b.margin-a.margin)[0];
-  safeSet('ins-best',topByProfit?topByProfit.name:'—');
-  safeSet('ins-sval',fmt(stockVal));
-  safeSet('ins-margin',avgMargin+'%');
+  document.getElementById('ins-best').textContent=topByProfit?topByProfit.name:'—';
+  document.getElementById('ins-sval').textContent=fmt(stockVal);
+  document.getElementById('ins-margin').textContent=avgMargin+'%';
   document.getElementById('ins-bar').style.width=Math.min(avgMargin,100)+'%';
-  safeSet('ins-items',totalStock);
+  document.getElementById('ins-items').textContent=totalStock;
 }
 
 // ═══ CHART ═══
@@ -1648,11 +1661,11 @@ function openUpdateCapital(){
 
 // ═══ STATS ═══
 function updateStats(){
-  safeSet('st-sales',fmt(A.todaySales));
-  safeSet('st-profit',fmt(A.todayProfit));
-  safeSet('st-cap',fmt(A.user?.capital||0));
-  safeSet('cap-hd',fmtN(A.user?.capital||0));
-  safeSet('st-stock',A.catalog.reduce((s,i)=>s+i.quantity,0));
+  document.getElementById('st-sales').textContent=fmt(A.todaySales);
+  document.getElementById('st-profit').textContent=fmt(A.todayProfit);
+  document.getElementById('st-cap').textContent=fmt(A.user?.capital||0);
+  document.getElementById('cap-hd').textContent=fmtN(A.user?.capital||0);
+  document.getElementById('st-stock').textContent=A.catalog.reduce((s,i)=>s+i.quantity,0);
 }
 
 // ═══ CHAT FEED ═══
