@@ -873,17 +873,18 @@ const ts=()=>{const d=new Date();return d.toLocaleDateString('en-NG',{day:'numer
 const SS=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');};
 const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
-const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
+const showLD=msg=>{const ldt=document.getElementById('LD-txt');if(ldt)ldt.textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
 const hideLD=()=>document.getElementById('LD').classList.remove('show');
-const toast=msg=>{const t=document.getElementById('TOAST');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);};
-const setErr=(id,msg)=>{const e=document.getElementById(id);e.textContent=msg;e.style.display='block';};
+const toast=msg=>{const t=document.getElementById('TOAST');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}};
+const safeText=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+const setErr=(id,msg)=>{const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block';}};
 const clErr=id=>document.getElementById(id).style.display='none';
 const hashP=p=>{let h=0;for(let c of p){h=(h<<5)-h+c.charCodeAt(0);h|=0;}return h.toString(36);};
 
 function showSuccess(title,sub){
   const o=document.getElementById('SUCCESS');
-  document.getElementById('SUC-txt').textContent=title;
-  document.getElementById('SUC-sub').textContent=sub;
+  safeText('SUC-txt',title);
+  safeText('SUC-sub',sub);
   o.classList.add('show');
   setTimeout(()=>o.classList.remove('show'),2000);
 }
@@ -1128,9 +1129,9 @@ function filterCat(){
 function updateStockVal(){
   const cost=A.catalog.reduce((s,i)=>s+(i.cost_price*i.quantity),0);
   const sell=A.catalog.reduce((s,i)=>s+(i.sell_price*i.quantity),0);
-  document.getElementById('svc-cost').textContent=fmt(cost);
-  document.getElementById('svc-sell').textContent=fmt(sell);
-  document.getElementById('svc-profit').textContent=fmt(sell-cost);
+  safeText('svc-cost',fmt(cost));
+  safeText('svc-sell',fmt(sell));
+  safeText('svc-profit',fmt(sell-cost));
 }
 
 function checkLow(){
@@ -1143,7 +1144,7 @@ function checkLow(){
 
 function openAddItem(){
   A.editId=null;A.editImgFile=null;
-  document.getElementById('item-mtitle').textContent='Add New Item';
+  safeText('item-mtitle','Add New Item');
   ['ei-name','ei-desc','ei-cost','ei-sell'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ei-qty').value='1';document.getElementById('ei-emoji').value='💎';
   document.getElementById('ei-id').value='';document.getElementById('ei-prev').style.display='none';
@@ -1153,7 +1154,7 @@ function openAddItem(){
 function openEdit(id){
   const it=A.catalog.find(i=>i.id===id);if(!it)return;
   A.editId=id;A.editImgFile=null;
-  document.getElementById('item-mtitle').textContent='Edit Item';
+  safeText('item-mtitle','Edit Item');
   document.getElementById('ei-id').value=id;
   document.getElementById('ei-name').value=it.name;
   document.getElementById('ei-desc').value=it.description||'';
@@ -1225,12 +1226,12 @@ function updatePv(){
   const qty=parseInt(document.getElementById('si-qty').value)||1;
   const p=parseFloat(document.getElementById('si-price').value)||0;
   const it=A.catalog.find(i=>i.id===id);
-  if(!it||!p){document.getElementById('pv-tot').textContent='₦0';document.getElementById('pv-prof').textContent='₦0';document.getElementById('pv-marg').textContent='0%';return;}
+  if(!it||!p){safeText('pv-tot','₦0');safeText('pv-prof','₦0');safeText('pv-marg','0%');return;}
   const profit=(p-it.cost_price)*qty;
   const marg=it.cost_price>0?Math.round(((p-it.cost_price)/it.cost_price)*100):0;
-  document.getElementById('pv-tot').textContent=fmt(p*qty);
-  document.getElementById('pv-prof').textContent=fmt(profit);
-  document.getElementById('pv-marg').textContent=marg+'%';
+  safeText('pv-tot',fmt(p*qty));
+  safeText('pv-prof',fmt(profit));
+  safeText('pv-marg',marg+'%');
 }
 
 async function confirmSale(){
@@ -1497,8 +1498,8 @@ async function saveDebt(){
 function updateDebtStats(){
   const active=A.debts.filter(d=>!d.is_settled);
   const total=active.reduce((s,d)=>s+(d.amount_owed-d.amount_paid),0);
-  document.getElementById('st-debt').textContent=fmt(total);
-  document.getElementById('debt-count-lbl').textContent=active.length+' active debts · '+fmt(total)+' owed';
+  safeText('st-debt',fmt(total));
+  safeText('debt-count-lbl',active.length+' active debts · '+fmt(total)+' owed');
 }
 
 async function openDebtList(){
@@ -1508,7 +1509,7 @@ async function openDebtList(){
   const el=document.getElementById('debtlist-body');
   const active=debts.filter(d=>!d.is_settled);
   const total=active.reduce((s,d)=>s+(d.amount_owed-d.amount_paid),0);
-  document.getElementById('debtlist-sub').textContent=active.length+' active · '+fmt(total)+' total owed';
+  safeText('debtlist-sub',active.length+' active · '+fmt(total)+' total owed');
   if(!debts.length){el.innerHTML='<div class="empty"><div class="empty-icon">🤝</div><div class="empty-txt">No debt records yet.</div></div>';return;}
   el.innerHTML=debts.map(d=>{
     const bal=d.amount_owed-d.amount_paid;
@@ -1587,11 +1588,11 @@ function renderInsights(){
   const margins=A.catalog.filter(i=>i.cost_price>0).map(i=>((i.sell_price-i.cost_price)/i.cost_price)*100);
   const avgMargin=margins.length?Math.round(margins.reduce((a,b)=>a+b,0)/margins.length):0;
   const topByProfit=A.catalog.map(i=>{return {name:i.name,margin:i.sell_price-i.cost_price};}).sort((a,b)=>b.margin-a.margin)[0];
-  document.getElementById('ins-best').textContent=topByProfit?topByProfit.name:'—';
-  document.getElementById('ins-sval').textContent=fmt(stockVal);
-  document.getElementById('ins-margin').textContent=avgMargin+'%';
+  safeText('ins-best',topByProfit?topByProfit.name:'—');
+  safeText('ins-sval',fmt(stockVal));
+  safeText('ins-margin',avgMargin+'%');
   document.getElementById('ins-bar').style.width=Math.min(avgMargin,100)+'%';
-  document.getElementById('ins-items').textContent=totalStock;
+  safeText('ins-items',totalStock);
 }
 
 // ═══ CHART ═══
@@ -1661,11 +1662,11 @@ function openUpdateCapital(){
 
 // ═══ STATS ═══
 function updateStats(){
-  document.getElementById('st-sales').textContent=fmt(A.todaySales);
-  document.getElementById('st-profit').textContent=fmt(A.todayProfit);
-  document.getElementById('st-cap').textContent=fmt(A.user?.capital||0);
-  document.getElementById('cap-hd').textContent=fmtN(A.user?.capital||0);
-  document.getElementById('st-stock').textContent=A.catalog.reduce((s,i)=>s+i.quantity,0);
+  safeText('st-sales',fmt(A.todaySales));
+  safeText('st-profit',fmt(A.todayProfit));
+  safeText('st-cap',fmt(A.user?.capital||0));
+  safeText('cap-hd',fmtN(A.user?.capital||0));
+  safeText('st-stock',A.catalog.reduce((s,i)=>s+i.quantity,0));
 }
 
 // ═══ CHAT FEED ═══
