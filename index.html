@@ -195,8 +195,6 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .cedit,.cdel{flex:1;padding:7px;border-radius:var(--rs);font-size:11px;font-weight:600;font-family:var(--fb);cursor:pointer;border:1px solid var(--border);}
 .cedit{background:var(--off);color:var(--navy);}
 .cdel{background:var(--rp);color:var(--red);border-color:transparent;}
-.hdel-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:4px 8px;border-radius:6px;color:#dc2626;opacity:0.5;transition:opacity 0.2s;float:right;margin-top:-2px;}
-.hdel-btn:hover{opacity:1;background:rgba(220,38,38,0.08);}
 
 /* FORMS */
 .fsec{padding:14px;}
@@ -921,7 +919,6 @@ const DB={
   deleteItem:id=>sb('kc_catalog?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'}),
   getTxns:(uid,limit)=>sb('kc_transactions?user_id=eq.'+uid+'&order=created_at.desc&limit='+(limit||80)),
   addTxn:t=>sb('kc_transactions',{method:'POST',body:JSON.stringify(t)}),
-  deleteTxn:id=>sb('kc_transactions?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'}),
   getTodaySales:uid=>{const d=new Date().toISOString().split('T')[0];return sb('kc_transactions?user_id=eq.'+uid+'&created_at=gte.'+d+'T00:00:00&type=eq.sale');},
   getDebts:uid=>sb('kc_debts?user_id=eq.'+uid+'&order=created_at.desc'),
   addDebt:d=>sb('kc_debts',{method:'POST',body:JSON.stringify(d)}),
@@ -1423,61 +1420,12 @@ function renderHist(txns){
                `${t.notes||'Expense'}`;
     const d=new Date(t.created_at);
     const dstr=d.toLocaleDateString('en-NG',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
-    return `<div class="hi" id="hi-${t.id}">
+    return `<div class="hi">
       <div class="hico ${t.type}">${t.item_emoji||'💎'}</div>
       <div class="hin"><div class="hname">${t.item_name}</div><div class="hsub">${sub}</div></div>
-      <div style="text-align:right">
-        <div class="hamt ${amtClass}">${amt}</div>
-        <div class="htime">${dstr}</div>
-        <button class="hdel-btn" onclick="delHistory('${t.id}')" title="Delete this record">🗑</button>
-      </div>
+      <div><div class="hamt ${amtClass}">${amt}</div><div class="htime">${dstr}</div></div>
     </div>`;
   }).join('');
-}
-
-async function delHistory(id){
-  // Show custom confirm dialog
-  const confirmed = await showConfirmDelete();
-  if(!confirmed) return;
-  showLD('Deleting record…');
-  try{
-    await DB.deleteTxn(id);
-    A.txns=A.txns.filter(t=>String(t.id)!==String(id));
-    renderHist(A.txns);
-    updateStats();
-    renderInsights();
-    hideLD();
-    toast('✅ Record deleted');
-  }catch(e){
-    hideLD();
-    toast('Error: '+e.message);
-  }
-}
-
-function showConfirmDelete(){
-  return new Promise(resolve=>{
-    // Remove existing confirm if any
-    const existing=document.getElementById('del-confirm-overlay');
-    if(existing)existing.remove();
-    // Create overlay
-    const overlay=document.createElement('div');
-    overlay.id='del-confirm-overlay';
-    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    overlay.innerHTML=`
-      <div style='background:#1a2744;border-radius:16px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);'>
-        <div style='font-size:36px;margin-bottom:12px;'>🗑️</div>
-        <div style='font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;'>Delete this record?</div>
-        <div style='font-size:13px;color:#94a3b8;margin-bottom:24px;'>This action cannot be undone. The record will be permanently removed from your history.</div>
-        <div style='display:flex;gap:12px;'>
-          <button id='del-cancel-btn' style='flex:1;padding:12px;border-radius:10px;border:1.5px solid #334155;background:none;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;'>Cancel</button>
-          <button id='del-confirm-btn' style='flex:1;padding:12px;border-radius:10px;border:none;background:#dc2626;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;'>Yes, Delete</button>
-        </div>
-      </div>`;
-    document.body.appendChild(overlay);
-    document.getElementById('del-confirm-btn').onclick=()=>{overlay.remove();resolve(true);};
-    document.getElementById('del-cancel-btn').onclick=()=>{overlay.remove();resolve(false);};
-    overlay.onclick=(e)=>{if(e.target===overlay){overlay.remove();resolve(false);}};
-  });
 }
 
 // ═══ EXPENSES ═══
@@ -1745,6 +1693,55 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('/sw.js')
       .then(function(reg){console.log('SW registered:',reg.scope);})
       .catch(function(err){console.log('SW failed:',err);});
+  });
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', async function(){
+    try{
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      console.log('[App] SW registered:', reg.scope);
+
+      // Check for updates every 60 seconds
+      setInterval(()=>{ reg.update(); }, 60000);
+
+      // When a new SW is found installing
+      reg.addEventListener('updatefound', ()=>{
+        const newSW = reg.installing;
+        console.log('[App] New SW found, installing...');
+        newSW.addEventListener('statechange', ()=>{
+          if(newSW.state === 'installed'){
+            if(navigator.serviceWorker.controller){
+              // New version available — tell it to activate now
+              console.log('[App] New version ready — activating...');
+              newSW.postMessage({ type: 'SKIP_WAITING' });
+            }
+          }
+        });
+      });
+
+      // When SW tells us it updated — reload the page
+      navigator.serviceWorker.addEventListener('message', e=>{
+        if(e.data && e.data.type === 'SW_UPDATED'){
+          console.log('[App] SW updated to', e.data.version, '— reloading...');
+          window.location.reload(true);
+        }
+      });
+
+      // If controller changed (new SW took over) — reload
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+        if(!refreshing){
+          refreshing = true;
+          console.log('[App] Controller changed — reloading for fresh version');
+          window.location.reload(true);
+        }
+      });
+
+    }catch(e){
+      console.log('[App] SW registration failed:', e);
+    }
   });
 }
 </script>
