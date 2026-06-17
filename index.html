@@ -873,10 +873,9 @@ const ts=()=>{const d=new Date();return d.toLocaleDateString('en-NG',{day:'numer
 const SS=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');};
 const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
-const showLD=msg=>{const ldt=document.getElementById('LD-txt');if(ldt)ldt.textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
+const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
 const hideLD=()=>document.getElementById('LD').classList.remove('show');
 const toast=msg=>{const t=document.getElementById('TOAST');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}};
-const safeText=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
 const setErr=(id,msg)=>{const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block';}};
 const clErr=id=>document.getElementById(id).style.display='none';
 const hashP=p=>{let h=0;for(let c of p){h=(h<<5)-h+c.charCodeAt(0);h|=0;}return h.toString(36);};
@@ -1129,9 +1128,9 @@ function filterCat(){
 function updateStockVal(){
   const cost=A.catalog.reduce((s,i)=>s+(i.cost_price*i.quantity),0);
   const sell=A.catalog.reduce((s,i)=>s+(i.sell_price*i.quantity),0);
-  safeText('svc-cost',fmt(cost));
-  safeText('svc-sell',fmt(sell));
-  safeText('svc-profit',fmt(sell-cost));
+  document.getElementById('svc-cost').textContent=fmt(cost);
+  document.getElementById('svc-sell').textContent=fmt(sell);
+  document.getElementById('svc-profit').textContent=fmt(sell-cost);
 }
 
 function checkLow(){
@@ -1144,7 +1143,7 @@ function checkLow(){
 
 function openAddItem(){
   A.editId=null;A.editImgFile=null;
-  safeText('item-mtitle','Add New Item');
+  document.getElementById('item-mtitle').textContent='Add New Item';
   ['ei-name','ei-desc','ei-cost','ei-sell'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ei-qty').value='1';document.getElementById('ei-emoji').value='💎';
   document.getElementById('ei-id').value='';document.getElementById('ei-prev').style.display='none';
@@ -1154,7 +1153,7 @@ function openAddItem(){
 function openEdit(id){
   const it=A.catalog.find(i=>i.id===id);if(!it)return;
   A.editId=id;A.editImgFile=null;
-  safeText('item-mtitle','Edit Item');
+  document.getElementById('item-mtitle').textContent='Edit Item';
   document.getElementById('ei-id').value=id;
   document.getElementById('ei-name').value=it.name;
   document.getElementById('ei-desc').value=it.description||'';
@@ -1221,10 +1220,15 @@ function onSellChange(){
   updatePv();
 }
 
+function safeText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
 function updatePv(){
-  const id=document.getElementById('si-item').value;
-  const qty=parseInt(document.getElementById('si-qty').value)||1;
-  const p=parseFloat(document.getElementById('si-price').value)||0;
+  const siItem=document.getElementById('si-item');
+  const siQty=document.getElementById('si-qty');
+  const siPrice=document.getElementById('si-price');
+  if(!siItem||!siQty||!siPrice)return;
+  const id=siItem.value;
+  const qty=parseInt(siQty.value)||1;
+  const p=parseFloat(siPrice.value)||0;
   const it=A.catalog.find(i=>i.id===id);
   if(!it||!p){safeText('pv-tot','₦0');safeText('pv-prof','₦0');safeText('pv-marg','0%');return;}
   const profit=(p-it.cost_price)*qty;
@@ -1344,45 +1348,58 @@ function toggleReceipt(mode,btn){
 }
 
 function buildInvoice(){
-  const d=A.lastInvoice;if(!d)return;
+  const d=A.lastInvoice;
+  if(!d){console.log('buildInvoice: no lastInvoice');return;}
   const showProfit=_invoiceMode==='owner';
   let html='';
-  if(d.type==='sale'){
-    const it=d.it||{};
-    const emoji=it.emoji||'💎';
-    const iname=it.name||d.name||'Item';
-    const cp=Number(it.cost_price)||0;
-    const margin=cp>0?Math.round(((Number(d.price)-cp)/cp)*100):0;
-    html=`
-      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t||''}</span></div>
-      ${d.cust?`<div class="rrow m"><span>Customer</span><span>${d.cust}</span></div>`:''}
-      <div class="rrow m"><span>Payment Method</span><span>${d.pay||'Cash'}</span></div>
-      ${d.notes?`<div class="rrow m"><span>Notes</span><span>${d.notes}</span></div>`:''}
-      <hr class="rdiv">
-      <div class="rrow"><span>${emoji} ${iname}</span><span>${fmt(Number(d.price)||0)}</span></div>
-      <div class="rrow m"><span>Quantity</span><span>× ${d.qty||1}</span></div>
-      <div class="rrow tot"><span>Total Paid</span><span>${fmt(Number(d.total)||0)}</span></div>
-      ${showProfit?`<div class="rprofit">Owner copy — Profit: ${fmt(Number(d.profit)||0)} (${margin}% margin) 🎉</div>`:''}`;
-  }else{
-    const cost=Number(d.cost)||0;
-    const margin=Number(d.margin)||0;
-    const mpct=cost>0?Math.round((margin/cost)*100):0;
-    html=`
-      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t||''}</span></div>
-      <div class="rrow m"><span>Supplier</span><span>Kano Market</span></div>
-      <hr class="rdiv">
-      <div class="rrow"><span>${d.emoji||'📦'} ${d.name||'Item'}</span><span>${fmt(cost)}/item</span></div>
-      <div class="rrow m"><span>Quantity bought</span><span>× ${d.qty||1}</span></div>
-      <div class="rrow tot"><span>Total Spent</span><span>${fmt(Number(d.total)||0)}</span></div>
-      ${showProfit?`<div class="rprofit">Expected profit/item: ${fmt(margin)} (${mpct}% margin)</div>`:''}`;
+  try{
+    if(d.type==='sale'){
+      const it=d.it||{};
+      const emoji=it.emoji||'💎';
+      const iname=it.name||d.name||'Item';
+      const cp=Number(it.cost_price)||0;
+      const pr=Number(d.price)||0;
+      const margin=cp>0?Math.round(((pr-cp)/cp)*100):0;
+      html='<div class="rrow m"><span>Date &amp; Time</span><span>'+(d.t||'')+'</span></div>'
+        +(d.cust?'<div class="rrow m"><span>Customer</span><span>'+d.cust+'</span></div>':'')
+        +'<div class="rrow m"><span>Payment</span><span>'+(d.pay||'Cash')+'</span></div>'
+        +(d.notes?'<div class="rrow m"><span>Notes</span><span>'+d.notes+'</span></div>':'')
+        +'<hr class="rdiv">'
+        +'<div class="rrow"><span>'+emoji+' '+iname+'</span><span>'+fmt(pr)+'</span></div>'
+        +'<div class="rrow m"><span>Quantity</span><span>× '+(d.qty||1)+'</span></div>'
+        +'<div class="rrow tot"><span>Total Paid</span><span>'+fmt(Number(d.total)||0)+'</span></div>'
+        +(showProfit?'<div class="rprofit">Profit: '+fmt(Number(d.profit)||0)+' ('+margin+'%) 🎉</div>':'');
+    }else{
+      const cost=Number(d.cost)||0;
+      const margin=Number(d.margin)||0;
+      const mpct=cost>0?Math.round((margin/cost)*100):0;
+      html='<div class="rrow m"><span>Date &amp; Time</span><span>'+(d.t||'')+'</span></div>'
+        +'<div class="rrow m"><span>Supplier</span><span>Kano Market</span></div>'
+        +'<hr class="rdiv">'
+        +'<div class="rrow"><span>'+(d.emoji||'📦')+' '+(d.name||'Item')+'</span><span>'+fmt(cost)+'/item</span></div>'
+        +'<div class="rrow m"><span>Qty bought</span><span>× '+(d.qty||1)+'</span></div>'
+        +'<div class="rrow tot"><span>Total Spent</span><span>'+fmt(Number(d.total)||0)+'</span></div>'
+        +(showProfit?'<div class="rprofit">Profit/item: '+fmt(margin)+' ('+mpct+'%)</div>':'');
+    }
+  }catch(err){
+    html='<p style="color:red;padding:16px">Error building receipt: '+err.message+'</p>';
+    console.error('buildInvoice error:',err);
   }
-  // Safe setter with retry if modal not yet visible
-  const trySet=()=>{
+  // Write to receipt-body — retry if modal not open yet
+  let attempts=0;
+  const tryWrite=()=>{
+    attempts++;
     const rb=document.getElementById('receipt-body');
-    if(rb){rb.innerHTML=html;}
-    else{setTimeout(trySet,100);}
+    if(rb){
+      rb.innerHTML=html;
+      console.log('Receipt written on attempt',attempts);
+    }else if(attempts<20){
+      setTimeout(tryWrite,100);
+    }else{
+      console.error('receipt-body not found after',attempts,'attempts');
+    }
   };
-  trySet();
+  tryWrite();
 }
 
 function doWA(){
