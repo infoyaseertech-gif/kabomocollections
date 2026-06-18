@@ -222,6 +222,21 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .hf-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:var(--fb);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--muted);white-space:nowrap;transition:all .15s;}
 .hf-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
 .hlist{padding:8px 14px;display:flex;flex-direction:column;gap:8px;}
+.hdel{background:none;border:none;cursor:pointer;font-size:16px;padding:4px 6px;
+border-radius:6px;line-height:1;opacity:0.5;transition:opacity 0.2s,background 0.2s;}
+.hdel:hover{opacity:1;background:rgba(220,38,38,0.1);}
+.del-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;
+display:flex;align-items:center;justify-content:center;padding:20px;}
+.del-box{background:#1a2744;border-radius:16px;padding:28px 22px;max-width:300px;
+width:100%;text-align:center;}
+.del-icon{font-size:40px;margin-bottom:10px;}
+.del-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
+.del-sub{font-size:13px;color:#94a3b8;margin-bottom:22px;line-height:1.5;}
+.del-btns{display:flex;gap:10px;}
+.del-cancel{flex:1;padding:12px;border-radius:10px;border:1.5px solid #334155;
+background:none;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.del-confirm{flex:1;padding:12px;border-radius:10px;border:none;background:#dc2626;
+color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
 .hi{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);}
 .hico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .hico.sale{background:var(--gp);}
@@ -875,8 +890,9 @@ const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
 const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
 const hideLD=()=>document.getElementById('LD').classList.remove('show');
-const toast=msg=>{const t=document.getElementById('TOAST');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);};
-const setErr=(id,msg)=>{const e=document.getElementById(id);e.textContent=msg;e.style.display='block';};
+function safeText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+const toast=msg=>{const t=document.getElementById('TOAST');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}};
+const setErr=(id,msg)=>{const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block';}};
 const clErr=id=>document.getElementById(id).style.display='none';
 const hashP=p=>{let h=0;for(let c of p){h=(h<<5)-h+c.charCodeAt(0);h|=0;}return h.toString(36);};
 
@@ -1221,16 +1237,20 @@ function onSellChange(){
 }
 
 function updatePv(){
-  const id=document.getElementById('si-item').value;
-  const qty=parseInt(document.getElementById('si-qty').value)||1;
-  const p=parseFloat(document.getElementById('si-price').value)||0;
+  const siItem=document.getElementById('si-item');
+  const siQty=document.getElementById('si-qty');
+  const siPrice=document.getElementById('si-price');
+  if(!siItem||!siQty||!siPrice)return;
+  const id=siItem.value;
+  const qty=parseInt(siQty.value)||1;
+  const p=parseFloat(siPrice.value)||0;
   const it=A.catalog.find(i=>i.id===id);
-  if(!it||!p){document.getElementById('pv-tot').textContent='₦0';document.getElementById('pv-prof').textContent='₦0';document.getElementById('pv-marg').textContent='0%';return;}
+  if(!it||!p){safeText('pv-tot','₦0');safeText('pv-prof','₦0');safeText('pv-marg','0%');return;}
   const profit=(p-it.cost_price)*qty;
   const marg=it.cost_price>0?Math.round(((p-it.cost_price)/it.cost_price)*100):0;
-  document.getElementById('pv-tot').textContent=fmt(p*qty);
-  document.getElementById('pv-prof').textContent=fmt(profit);
-  document.getElementById('pv-marg').textContent=marg+'%';
+  safeText('pv-tot',fmt(p*qty));
+  safeText('pv-prof',fmt(profit));
+  safeText('pv-marg',marg+'%');
 }
 
 async function confirmSale(){
@@ -1406,7 +1426,10 @@ function filterHist(type,pill){
 function renderHist(txns){
   const list=txns.filter(t=>A.histFilter==='all'||t.type===A.histFilter);
   const el=document.getElementById('hlist');
-  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No '+A.histFilter+' records yet.</div></div>';return;}
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No '+A.histFilter+' records yet.</div></div>';
+    return;
+  }
   el.innerHTML=list.map(t=>{
     const s=t.type==='sale';
     const isPurch=t.type==='purchase';
@@ -1415,17 +1438,56 @@ function renderHist(txns){
     if(s){amt='+'+fmt(t.profit);amtClass='sale';}
     else if(isPurch){amt='-'+fmt(t.total_amount);amtClass='purchase';}
     else{amt='-'+fmt(t.total_amount);amtClass='expense';}
-    const sub=s?`${t.quantity}× · ${t.payment_method}${t.customer_name?' · '+t.customer_name:''}`:
-               isPurch?`${t.quantity}× · Kano market`:
-               `${t.notes||'Expense'}`;
+    const sub=s?t.quantity+'× · '+t.payment_method+(t.customer_name?' · '+t.customer_name:''):
+               isPurch?t.quantity+'× · Kano market':
+               (t.notes||'Expense');
     const d=new Date(t.created_at);
     const dstr=d.toLocaleDateString('en-NG',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
-    return `<div class="hi">
-      <div class="hico ${t.type}">${t.item_emoji||'💎'}</div>
-      <div class="hin"><div class="hname">${t.item_name}</div><div class="hsub">${sub}</div></div>
-      <div><div class="hamt ${amtClass}">${amt}</div><div class="htime">${dstr}</div></div>
-    </div>`;
+    return '<div class="hi" id="hi-'+t.id+'" style="position:relative">'
+      +'<div class="hico '+t.type+'">'+(t.item_emoji||'💎')+'</div>'
+      +'<div class="hin"><div class="hname">'+t.item_name+'</div><div class="hsub">'+sub+'</div></div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'
+      +'<div class="hamt '+amtClass+'">'+amt+'</div>'
+      +'<div class="htime">'+dstr+'</div>'
+      +'<button class="hdel" onclick="delHistory(''+t.id+'')" title="Delete">🗑</button>'
+      +'</div>'
+      +'</div>';
   }).join('');
+}
+
+function delHistory(id){
+  // Remove existing overlay
+  const ex=document.getElementById('del-overlay');
+  if(ex)ex.remove();
+  // Build overlay
+  const ov=document.createElement('div');
+  ov.id='del-overlay';
+  ov.className='del-overlay';
+  ov.innerHTML='<div class="del-box">'
+    +'<div class="del-icon">🗑️</div>'
+    +'<div class="del-title">Delete this record?</div>'
+    +'<div class="del-sub">This cannot be undone. The record will be permanently removed from your history.</div>'
+    +'<div class="del-btns">'
+    +'<button class="del-cancel" id="del-no">Cancel</button>'
+    +'<button class="del-confirm" id="del-yes">Yes, Delete</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  document.getElementById('del-no').onclick=()=>ov.remove();
+  ov.onclick=(e)=>{if(e.target===ov)ov.remove();};
+  document.getElementById('del-yes').onclick=async()=>{
+    ov.remove();
+    const t=document.getElementById('TOAST');
+    if(t){t.textContent='Deleting...';t.classList.add('show');}
+    try{
+      await sb('kc_transactions?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'});
+      A.txns=A.txns.filter(x=>String(x.id)!==String(id));
+      renderHist(A.txns);
+      updateStats();
+      if(t){t.textContent='✅ Record deleted';setTimeout(()=>t.classList.remove('show'),2500);}
+    }catch(e){
+      if(t){t.textContent='Error: '+e.message;setTimeout(()=>t.classList.remove('show'),3000);}
+    }
+  };
 }
 
 // ═══ EXPENSES ═══
@@ -1497,7 +1559,7 @@ async function saveDebt(){
 function updateDebtStats(){
   const active=A.debts.filter(d=>!d.is_settled);
   const total=active.reduce((s,d)=>s+(d.amount_owed-d.amount_paid),0);
-  document.getElementById('st-debt').textContent=fmt(total);
+  safeText('st-debt',fmt(total));
   document.getElementById('debt-count-lbl').textContent=active.length+' active debts · '+fmt(total)+' owed';
 }
 
@@ -1587,11 +1649,11 @@ function renderInsights(){
   const margins=A.catalog.filter(i=>i.cost_price>0).map(i=>((i.sell_price-i.cost_price)/i.cost_price)*100);
   const avgMargin=margins.length?Math.round(margins.reduce((a,b)=>a+b,0)/margins.length):0;
   const topByProfit=A.catalog.map(i=>{return {name:i.name,margin:i.sell_price-i.cost_price};}).sort((a,b)=>b.margin-a.margin)[0];
-  document.getElementById('ins-best').textContent=topByProfit?topByProfit.name:'—';
-  document.getElementById('ins-sval').textContent=fmt(stockVal);
-  document.getElementById('ins-margin').textContent=avgMargin+'%';
+  safeText('ins-best',topByProfit?topByProfit.name:'—');
+  safeText('ins-sval',fmt(stockVal));
+  safeText('ins-margin',avgMargin+'%');
   document.getElementById('ins-bar').style.width=Math.min(avgMargin,100)+'%';
-  document.getElementById('ins-items').textContent=totalStock;
+  safeText('ins-items',totalStock);
 }
 
 // ═══ CHART ═══
@@ -1661,11 +1723,11 @@ function openUpdateCapital(){
 
 // ═══ STATS ═══
 function updateStats(){
-  document.getElementById('st-sales').textContent=fmt(A.todaySales);
-  document.getElementById('st-profit').textContent=fmt(A.todayProfit);
-  document.getElementById('st-cap').textContent=fmt(A.user?.capital||0);
-  document.getElementById('cap-hd').textContent=fmtN(A.user?.capital||0);
-  document.getElementById('st-stock').textContent=A.catalog.reduce((s,i)=>s+i.quantity,0);
+  safeText('st-sales',fmt(A.todaySales));
+  safeText('st-profit',fmt(A.todayProfit));
+  safeText('st-cap',fmt(A.user?.capital||0));
+  safeText('cap-hd',fmtN(A.user?.capital||0));
+  safeText('st-stock',A.catalog.reduce((s,i)=>s+i.quantity,0));
 }
 
 // ═══ CHAT FEED ═══
@@ -1696,52 +1758,30 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+
 <script>
 if('serviceWorker' in navigator){
-  window.addEventListener('load', async function(){
+  window.addEventListener('load',async function(){
     try{
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      console.log('[App] SW registered:', reg.scope);
-
-      // Check for updates every 60 seconds
-      setInterval(()=>{ reg.update(); }, 60000);
-
-      // When a new SW is found installing
-      reg.addEventListener('updatefound', ()=>{
-        const newSW = reg.installing;
-        console.log('[App] New SW found, installing...');
-        newSW.addEventListener('statechange', ()=>{
-          if(newSW.state === 'installed'){
-            if(navigator.serviceWorker.controller){
-              // New version available — tell it to activate now
-              console.log('[App] New version ready — activating...');
-              newSW.postMessage({ type: 'SKIP_WAITING' });
-            }
+      const reg=await navigator.serviceWorker.register('/sw.js');
+      console.log('[App] SW registered');
+      setInterval(()=>reg.update(),60000);
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed'&&navigator.serviceWorker.controller){
+            nw.postMessage({type:'SKIP_WAITING'});
           }
         });
       });
-
-      // When SW tells us it updated — reload the page
-      navigator.serviceWorker.addEventListener('message', e=>{
-        if(e.data && e.data.type === 'SW_UPDATED'){
-          console.log('[App] SW updated to', e.data.version, '— reloading...');
-          window.location.reload(true);
-        }
+      navigator.serviceWorker.addEventListener('message',e=>{
+        if(e.data&&e.data.type==='SW_UPDATED')window.location.reload(true);
       });
-
-      // If controller changed (new SW took over) — reload
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-        if(!refreshing){
-          refreshing = true;
-          console.log('[App] Controller changed — reloading for fresh version');
-          window.location.reload(true);
-        }
+      let refreshing=false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(!refreshing){refreshing=true;window.location.reload(true);}
       });
-
-    }catch(e){
-      console.log('[App] SW registration failed:', e);
-    }
+    }catch(e){console.log('[App] SW failed:',e);}
   });
 }
 </script>
