@@ -8,6 +8,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kabomo Collections">
 <meta name="theme-color" content="#0a1f44">
+  <!-- PWA Manifest -->
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kabomo Collections">
+  <link rel="apple-touch-icon" href="kabomo_icon_192.png">
+  <meta name="msapplication-TileImage" content="kabomo_icon_192.png">
+  <meta name="msapplication-TileColor" content="#0a1f44">
+
 <title>Kabomo Collections</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -222,21 +231,6 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .hf-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:var(--fb);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--muted);white-space:nowrap;transition:all .15s;}
 .hf-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
 .hlist{padding:8px 14px;display:flex;flex-direction:column;gap:8px;}
-.hdel{background:none;border:none;cursor:pointer;font-size:16px;padding:4px 6px;
-border-radius:6px;line-height:1;opacity:0.5;transition:opacity 0.2s,background 0.2s;}
-.hdel:hover{opacity:1;background:rgba(220,38,38,0.1);}
-.del-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;
-display:flex;align-items:center;justify-content:center;padding:20px;}
-.del-box{background:#1a2744;border-radius:16px;padding:28px 22px;max-width:300px;
-width:100%;text-align:center;}
-.del-icon{font-size:40px;margin-bottom:10px;}
-.del-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;}
-.del-sub{font-size:13px;color:#94a3b8;margin-bottom:22px;line-height:1.5;}
-.del-btns{display:flex;gap:10px;}
-.del-cancel{flex:1;padding:12px;border-radius:10px;border:1.5px solid #334155;
-background:none;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
-.del-confirm{flex:1;padding:12px;border-radius:10px;border:none;background:#dc2626;
-color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
 .hi{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);}
 .hico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .hico.sale{background:var(--gp);}
@@ -362,9 +356,30 @@ color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
 .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
 .chart-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue2),var(--blue));min-height:4px;transition:height .6s ease;}
 .chart-lbl{font-size:9px;color:var(--muted);}
-.sp-download{margin-top:28px;z-index:2;animation:fadeIn .5s 1.3s both ease;}
-.sp-download a{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#c9a84c,#f0d080);color:#0a1f44;padding:13px 28px;border-radius:50px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,0.4);}
+.sp-download{margin-top:24px;z-index:2;animation:fadeIn .5s 1.3s both ease;}
+.sp-download a{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c9a84c,#f0d080);color:#0a1f44;padding:12px 26px;border-radius:50px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,0.4);}
 </style>
+
+<script>
+// Register inline manifest for standalone PWA use
+const manifestData = {
+  "name": "Kabomo Collections",
+  "short_name": "Kabomo",
+  "description": "Kabomo Collections POS — Wear Love, Wear Luxury",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1f44",
+  "theme_color": "#0a1f44",
+  "categories": ["business", "finance"]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestUrl = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestUrl;
+document.head.appendChild(link);
+</script>
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/kabomo_icon_192.png">
@@ -403,9 +418,7 @@ color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
   <div class="sp-name">KABOMO COLLECTIONS</div>
   <div class="sp-div"><span class="sp-slogan">Wear Love, Wear Luxury</span></div>
   <div class="sp-dots"><div class="sp-dot a"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
-<div class="sp-download">
-  <a href="https://drive.google.com/uc?export=download&id=1gFfq66xLsiJqYH3AFbdoBbwAzM3tgS-b" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:18px;height:18px;fill:#0a1f44;vertical-align:middle;margin-right:6px"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>Download App</a>
-</div>
+<div class="sp-download"><a href="https://drive.google.com/uc?export=download&id=1gFfq66xLsiJqYH3AFbdoBbwAzM3tgS-b" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:18px;height:18px;fill:#0a1f44;vertical-align:middle"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg> Download App</a></div>
 </div>
 
 <!-- ════ REGISTER ════ -->
@@ -885,20 +898,13 @@ const SBU='https://pelkootzjmcppuljgbqs.supabase.co',SBKEY='eyJhbGciOiJIUzI1NiIs
 const fmt=n=>'₦'+Math.round(n||0).toLocaleString();
 const fmtN=n=>{let s=String(Math.round(n||0));return s.replace(/\B(?=(\d{3})+(?!\d))/g,',');};
 const ts=()=>{const d=new Date();return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});};
-const SS=id=>{
-  try{
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    const el=document.getElementById(id);
-    if(el){el.classList.add('active');}
-    else{console.error('[SS] Screen not found:',id);}
-  }catch(err){console.error('[SS] Error:',err);}
-};
+const SS=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');};
 const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
 const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
 const hideLD=()=>document.getElementById('LD').classList.remove('show');
-function safeText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
 const toast=msg=>{const t=document.getElementById('TOAST');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}};
+function safeText(id,val){const el=document.getElementById(id);if(el)el.textContent=String(val);}
 const setErr=(id,msg)=>{const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block';}};
 const clErr=id=>document.getElementById(id).style.display='none';
 const hashP=p=>{let h=0;for(let c of p){h=(h<<5)-h+c.charCodeAt(0);h|=0;}return h.toString(36);};
@@ -1373,40 +1379,44 @@ function buildInvoice(){
   const d=A.lastInvoice;if(!d)return;
   const showProfit=_invoiceMode==='owner';
   let html='';
-  if(d.type==='sale'){
-    const it=d.it||{};
-    const emoji=it.emoji||'💎';
-    const iname=it.name||d.name||'Item';
-    const cp=Number(it.cost_price)||0;
-    const margin=cp>0?Math.round(((Number(d.price)-cp)/cp)*100):0;
-    html=`
-      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t||''}</span></div>
-      ${d.cust?`<div class="rrow m"><span>Customer</span><span>${d.cust}</span></div>`:''}
-      <div class="rrow m"><span>Payment Method</span><span>${d.pay||'Cash'}</span></div>
-      ${d.notes?`<div class="rrow m"><span>Notes</span><span>${d.notes}</span></div>`:''}
-      <hr class="rdiv">
-      <div class="rrow"><span>${emoji} ${iname}</span><span>${fmt(Number(d.price)||0)}</span></div>
-      <div class="rrow m"><span>Quantity</span><span>× ${d.qty||1}</span></div>
-      <div class="rrow tot"><span>Total Paid</span><span>${fmt(Number(d.total)||0)}</span></div>
-      ${showProfit?`<div class="rprofit">Owner copy — Profit: ${fmt(Number(d.profit)||0)} (${margin}% margin) 🎉</div>`:''}`;
-  }else{
-    const cost=Number(d.cost)||0;
-    const margin=Number(d.margin)||0;
-    const mpct=cost>0?Math.round((margin/cost)*100):0;
-    html=`
-      <div class="rrow m"><span>Date &amp; Time</span><span>${d.t||''}</span></div>
-      <div class="rrow m"><span>Supplier</span><span>Kano Market</span></div>
-      <hr class="rdiv">
-      <div class="rrow"><span>${d.emoji||'📦'} ${d.name||'Item'}</span><span>${fmt(cost)}/item</span></div>
-      <div class="rrow m"><span>Quantity bought</span><span>× ${d.qty||1}</span></div>
-      <div class="rrow tot"><span>Total Spent</span><span>${fmt(Number(d.total)||0)}</span></div>
-      ${showProfit?`<div class="rprofit">Expected profit/item: ${fmt(margin)} (${mpct}% margin)</div>`:''}`;
+  try{
+    if(d.type==='sale'){
+      const it=d.it||{};
+      const emoji=it.emoji||'💎';
+      const iname=it.name||d.name||'Item';
+      const cp=Number(it.cost_price)||0;
+      const pr=Number(d.price)||0;
+      const margin=cp>0?Math.round(((pr-cp)/cp)*100):0;
+      html='<div class="rrow m"><span>Date &amp; Time</span><span>'+(d.t||'')+'</span></div>'
+        +(d.cust?'<div class="rrow m"><span>Customer</span><span>'+d.cust+'</span></div>':'')
+        +'<div class="rrow m"><span>Payment</span><span>'+(d.pay||'Cash')+'</span></div>'
+        +(d.notes?'<div class="rrow m"><span>Notes</span><span>'+d.notes+'</span></div>':'')
+        +'<hr class="rdiv">'
+        +'<div class="rrow"><span>'+emoji+' '+iname+'</span><span>'+fmt(pr)+'</span></div>'
+        +'<div class="rrow m"><span>Quantity</span><span>× '+(d.qty||1)+'</span></div>'
+        +'<div class="rrow tot"><span>Total Paid</span><span>'+fmt(Number(d.total)||0)+'</span></div>'
+        +(showProfit?'<div class="rprofit">Profit: '+fmt(Number(d.profit)||0)+' ('+margin+'%) 🎉</div>':'');
+    }else{
+      const cost=Number(d.cost)||0;
+      const margin=Number(d.margin)||0;
+      const mpct=cost>0?Math.round((margin/cost)*100):0;
+      html='<div class="rrow m"><span>Date &amp; Time</span><span>'+(d.t||'')+'</span></div>'
+        +'<div class="rrow m"><span>Supplier</span><span>Kano Market</span></div>'
+        +'<hr class="rdiv">'
+        +'<div class="rrow"><span>'+(d.emoji||'📦')+' '+(d.name||'Item')+'</span><span>'+fmt(cost)+'/item</span></div>'
+        +'<div class="rrow m"><span>Qty bought</span><span>× '+(d.qty||1)+'</span></div>'
+        +'<div class="rrow tot"><span>Total Spent</span><span>'+fmt(Number(d.total)||0)+'</span></div>'
+        +(showProfit?'<div class="rprofit">Profit/item: '+fmt(margin)+' ('+mpct+'%)</div>':'');
+    }
+  }catch(err){
+    html='<p style="color:#ef4444;padding:16px">Error: '+err.message+'</p>';
   }
-  // Safe setter with retry if modal not yet visible
+  let att=0;
   const trySet=()=>{
+    att++;
     const rb=document.getElementById('receipt-body');
     if(rb){rb.innerHTML=html;}
-    else{setTimeout(trySet,100);}
+    else if(att<20){setTimeout(trySet,150);}
   };
   trySet();
 }
@@ -1433,67 +1443,57 @@ function filterHist(type,pill){
 function renderHist(txns){
   const list=txns.filter(t=>A.histFilter==='all'||t.type===A.histFilter);
   const el=document.getElementById('hlist');
-  if(!list.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No '+A.histFilter+' records yet.</div></div>';
-    return;
-  }
+  if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No '+A.histFilter+' records yet.</div></div>';return;}
   el.innerHTML=list.map(t=>{
     const s=t.type==='sale';
     const isPurch=t.type==='purchase';
-    const isExp=t.type==='expense';
     let amt,amtClass;
     if(s){amt='+'+fmt(t.profit);amtClass='sale';}
     else if(isPurch){amt='-'+fmt(t.total_amount);amtClass='purchase';}
     else{amt='-'+fmt(t.total_amount);amtClass='expense';}
-    const sub=s?t.quantity+'× · '+t.payment_method+(t.customer_name?' · '+t.customer_name:''):
-               isPurch?t.quantity+'× · Kano market':
+    const sub=s?(t.quantity+'× · '+t.payment_method+(t.customer_name?' · '+t.customer_name:'')):
+               isPurch?(t.quantity+'× · Kano market'):
                (t.notes||'Expense');
     const d=new Date(t.created_at);
     const dstr=d.toLocaleDateString('en-NG',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="hi" id="hi-'+t.id+'" style="position:relative">'
+    return '<div class="hi" id="hi-'+t.id+'">'
       +'<div class="hico '+t.type+'">'+(t.item_emoji||'💎')+'</div>'
       +'<div class="hin"><div class="hname">'+t.item_name+'</div><div class="hsub">'+sub+'</div></div>'
-      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'
       +'<div class="hamt '+amtClass+'">'+amt+'</div>'
       +'<div class="htime">'+dstr+'</div>'
-      +'<button class="hdel" onclick="delHistory(''+t.id+'')" title="Delete">🗑</button>'
+      +'<button onclick="delHistory(''+t.id+'')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;opacity:0.5;color:#ef4444;" title="Delete">🗑</button>'
       +'</div>'
       +'</div>';
   }).join('');
 }
 
 function delHistory(id){
-  // Remove existing overlay
-  const ex=document.getElementById('del-overlay');
-  if(ex)ex.remove();
-  // Build overlay
+  const ex=document.getElementById('del-ov');if(ex)ex.remove();
   const ov=document.createElement('div');
-  ov.id='del-overlay';
-  ov.className='del-overlay';
-  ov.innerHTML='<div class="del-box">'
-    +'<div class="del-icon">🗑️</div>'
-    +'<div class="del-title">Delete this record?</div>'
-    +'<div class="del-sub">This cannot be undone. The record will be permanently removed from your history.</div>'
-    +'<div class="del-btns">'
-    +'<button class="del-cancel" id="del-no">Cancel</button>'
-    +'<button class="del-confirm" id="del-yes">Yes, Delete</button>'
+  ov.id='del-ov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML='<div style="background:#1a2744;border-radius:16px;padding:28px 22px;max-width:300px;width:100%;text-align:center;">'
+    +'<div style="font-size:36px;margin-bottom:10px;">🗑️</div>'
+    +'<div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:8px;">Delete this record?</div>'
+    +'<div style="font-size:13px;color:#94a3b8;margin-bottom:22px;">This cannot be undone.</div>'
+    +'<div style="display:flex;gap:10px;">'
+    +'<button id="del-no" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #334155;background:none;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'<button id="del-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:#dc2626;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Yes, Delete</button>'
     +'</div></div>';
   document.body.appendChild(ov);
   document.getElementById('del-no').onclick=()=>ov.remove();
   ov.onclick=(e)=>{if(e.target===ov)ov.remove();};
   document.getElementById('del-yes').onclick=async()=>{
     ov.remove();
-    const t=document.getElementById('TOAST');
-    if(t){t.textContent='Deleting...';t.classList.add('show');}
+    toast('Deleting...');
     try{
       await sb('kc_transactions?id=eq.'+id,{method:'DELETE',prefer:'return=minimal'});
       A.txns=A.txns.filter(x=>String(x.id)!==String(id));
       renderHist(A.txns);
       updateStats();
-      if(t){t.textContent='✅ Record deleted';setTimeout(()=>t.classList.remove('show'),2500);}
-    }catch(e){
-      if(t){t.textContent='Error: '+e.message;setTimeout(()=>t.classList.remove('show'),3000);}
-    }
+      toast('✅ Record deleted');
+    }catch(e){toast('Error: '+e.message);}
   };
 }
 
@@ -1566,7 +1566,7 @@ async function saveDebt(){
 function updateDebtStats(){
   const active=A.debts.filter(d=>!d.is_settled);
   const total=active.reduce((s,d)=>s+(d.amount_owed-d.amount_paid),0);
-  safeText('st-debt',fmt(total));
+  document.getElementById('st-debt').textContent=fmt(total);
   document.getElementById('debt-count-lbl').textContent=active.length+' active debts · '+fmt(total)+' owed';
 }
 
@@ -1656,11 +1656,11 @@ function renderInsights(){
   const margins=A.catalog.filter(i=>i.cost_price>0).map(i=>((i.sell_price-i.cost_price)/i.cost_price)*100);
   const avgMargin=margins.length?Math.round(margins.reduce((a,b)=>a+b,0)/margins.length):0;
   const topByProfit=A.catalog.map(i=>{return {name:i.name,margin:i.sell_price-i.cost_price};}).sort((a,b)=>b.margin-a.margin)[0];
-  safeText('ins-best',topByProfit?topByProfit.name:'—');
-  safeText('ins-sval',fmt(stockVal));
-  safeText('ins-margin',avgMargin+'%');
+  document.getElementById('ins-best').textContent=topByProfit?topByProfit.name:'—';
+  document.getElementById('ins-sval').textContent=fmt(stockVal);
+  document.getElementById('ins-margin').textContent=avgMargin+'%';
   document.getElementById('ins-bar').style.width=Math.min(avgMargin,100)+'%';
-  safeText('ins-items',totalStock);
+  document.getElementById('ins-items').textContent=totalStock;
 }
 
 // ═══ CHART ═══
@@ -1748,20 +1748,14 @@ function addChat(type,text,time){
 
 // ═══ INIT ═══
 (function init(){
-  setTimeout(async()=>{
+  setTimeout(()=>{
     try{
       const email=localStorage.getItem('kc_email');
       const liEmail=document.getElementById('li-email');
       if(email&&liEmail)liEmail.value=email;
-      const loginScreen=document.getElementById('s-login');
-      if(loginScreen){
-        SS('s-login');
-      }else{
-        console.error('[Init] s-login not found');
-      }
+      SS('s-login');
     }catch(err){
-      console.error('[Init] Error:',err);
-      // Force show login even if something fails
+      console.error('Init error:',err);
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
       const ls=document.getElementById('s-login');
       if(ls)ls.classList.add('active');
@@ -1771,11 +1765,12 @@ function addChat(type,text,time){
 </script>
 
 <script>
+// ═══ SERVICE WORKER — AUTO UPDATE ═══
 if('serviceWorker' in navigator){
-  window.addEventListener('load',async function(){
+  window.addEventListener('load',async()=>{
     try{
       const reg=await navigator.serviceWorker.register('/sw.js');
-      console.log('[App] SW registered');
+      console.log('[Kabomo] SW registered');
       setInterval(()=>reg.update(),60000);
       reg.addEventListener('updatefound',()=>{
         const nw=reg.installing;
@@ -1786,15 +1781,94 @@ if('serviceWorker' in navigator){
         });
       });
       navigator.serviceWorker.addEventListener('message',e=>{
-        if(e.data&&e.data.type==='SW_UPDATED')window.location.reload(true);
+        if(e.data&&e.data.type==='SW_UPDATED'){
+          console.log('[Kabomo] New version — reloading');
+          window.location.reload(true);
+        }
       });
       let refreshing=false;
       navigator.serviceWorker.addEventListener('controllerchange',()=>{
         if(!refreshing){refreshing=true;window.location.reload(true);}
       });
-    }catch(e){console.log('[App] SW failed:',e);}
+    }catch(e){console.log('[Kabomo] SW failed:',e);}
   });
 }
+
+// ═══ PWA INSTALL PROMPT ═══
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner after 3 seconds if not installed
+  setTimeout(() => {
+    if (deferredPrompt) showInstallBanner();
+  }, 3000);
+});
+
+function showInstallBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = `
+    position:fixed;bottom:90px;left:14px;right:14px;z-index:1000;
+    background:linear-gradient(135deg,#0a1f44,#1a3a72);
+    border-radius:14px;padding:14px 16px;
+    display:flex;align-items:center;gap:12px;
+    box-shadow:0 8px 32px rgba(10,31,68,.4);
+    animation:slideUp .3s ease;
+  `;
+  banner.innerHTML = `
+    <img src="kabomo_icon_192.png" style="width:42px;height:42px;border-radius:10px;flex-shrink:0" alt="icon">
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:600;color:#fff;font-family:Outfit,sans-serif">Install Kabomo Collections</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Add to home screen for best experience</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button onclick="dismissInstall()" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-family:Outfit,sans-serif;cursor:pointer">Later</button>
+      <button onclick="triggerInstall()" style="background:#c9a84c;color:#0a1f44;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;font-family:Outfit,sans-serif;cursor:pointer">Install</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+function triggerInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      const b = document.getElementById('install-banner');
+      if (b) b.remove();
+    }
+    deferredPrompt = null;
+  });
+}
+
+function dismissInstall() {
+  const b = document.getElementById('install-banner');
+  if (b) b.remove();
+}
+
+window.addEventListener('appinstalled', () => {
+  const b = document.getElementById('install-banner');
+  if (b) b.remove();
+  deferredPrompt = null;
+  console.log('Kabomo Collections installed!');
+});
+
+// ═══ OFFLINE DETECTION ═══
+function updateOnlineStatus() {
+  const banner = document.getElementById('OFFLINE');
+  if (banner) {
+    if (!navigator.onLine) {
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
 </script>
+
 </body>
 </html>
