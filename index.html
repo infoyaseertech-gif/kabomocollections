@@ -885,7 +885,14 @@ const SBU='https://pelkootzjmcppuljgbqs.supabase.co',SBKEY='eyJhbGciOiJIUzI1NiIs
 const fmt=n=>'₦'+Math.round(n||0).toLocaleString();
 const fmtN=n=>{let s=String(Math.round(n||0));return s.replace(/\B(?=(\d{3})+(?!\d))/g,',');};
 const ts=()=>{const d=new Date();return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});};
-const SS=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');};
+const SS=id=>{
+  try{
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const el=document.getElementById(id);
+    if(el){el.classList.add('active');}
+    else{console.error('[SS] Screen not found:',id);}
+  }catch(err){console.error('[SS] Error:',err);}
+};
 const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
 const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
@@ -1742,21 +1749,25 @@ function addChat(type,text,time){
 // ═══ INIT ═══
 (function init(){
   setTimeout(async()=>{
-    const email=localStorage.getItem('kc_email');
-    if(email)document.getElementById('li-email').value=email;
-    SS('s-login');
+    try{
+      const email=localStorage.getItem('kc_email');
+      const liEmail=document.getElementById('li-email');
+      if(email&&liEmail)liEmail.value=email;
+      const loginScreen=document.getElementById('s-login');
+      if(loginScreen){
+        SS('s-login');
+      }else{
+        console.error('[Init] s-login not found');
+      }
+    }catch(err){
+      console.error('[Init] Error:',err);
+      // Force show login even if something fails
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      const ls=document.getElementById('s-login');
+      if(ls)ls.classList.add('active');
+    }
   },3000);
 })();
-</script>
-
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('/sw.js')
-      .then(function(reg){console.log('SW registered:',reg.scope);})
-      .catch(function(err){console.log('SW failed:',err);});
-  });
-}
 </script>
 
 <script>
