@@ -8,14 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Kabomo Collections">
 <meta name="theme-color" content="#0a1f44">
-  <!-- PWA Manifest -->
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Kabomo Collections">
-  <link rel="apple-touch-icon" href="kabomo_icon_192.png">
-  <meta name="msapplication-TileImage" content="kabomo_icon_192.png">
-  <meta name="msapplication-TileColor" content="#0a1f44">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/kabomo_icon_192.png">
 
 <title>Kabomo Collections</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -360,26 +354,7 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .sp-download a{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c9a84c,#f0d080);color:#0a1f44;padding:12px 26px;border-radius:50px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,0.4);}
 </style>
 
-<script>
-// Register inline manifest for standalone PWA use
-const manifestData = {
-  "name": "Kabomo Collections",
-  "short_name": "Kabomo",
-  "description": "Kabomo Collections POS — Wear Love, Wear Luxury",
-  "start_url": ".",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0a1f44",
-  "theme_color": "#0a1f44",
-  "categories": ["business", "finance"]
-};
-const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
-const manifestUrl = URL.createObjectURL(blob);
-const link = document.createElement('link');
-link.rel = 'manifest';
-link.href = manifestUrl;
-document.head.appendChild(link);
-</script>
+
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/kabomo_icon_192.png">
@@ -898,7 +873,11 @@ const SBU='https://pelkootzjmcppuljgbqs.supabase.co',SBKEY='eyJhbGciOiJIUzI1NiIs
 const fmt=n=>'₦'+Math.round(n||0).toLocaleString();
 const fmtN=n=>{let s=String(Math.round(n||0));return s.replace(/\B(?=(\d{3})+(?!\d))/g,',');};
 const ts=()=>{const d=new Date();return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});};
-const SS=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');};
+const SS=id=>{
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.display='';});
+  var el=document.getElementById(id);
+  if(el){el.classList.add('active');el.style.display='flex';}
+};
 const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
 const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
@@ -1748,49 +1727,27 @@ function addChat(type,text,time){
 
 // ═══ INIT ═══
 (function init(){
-  setTimeout(()=>{
-    try{
-      const email=localStorage.getItem('kc_email');
-      const liEmail=document.getElementById('li-email');
-      if(email&&liEmail)liEmail.value=email;
-      SS('s-login');
-    }catch(err){
-      console.error('Init error:',err);
-      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-      const ls=document.getElementById('s-login');
-      if(ls)ls.classList.add('active');
-    }
-  },3000);
+  setTimeout(function(){
+    document.querySelectorAll('.screen').forEach(function(s){
+      s.classList.remove('active');
+      s.style.display='';
+    });
+    var login = document.getElementById('s-login');
+    if(login){ login.classList.add('active'); login.style.display='flex'; }
+    var email = localStorage.getItem('kc_email');
+    var emailInput = document.getElementById('li-email');
+    if(email && emailInput) emailInput.value = email;
+  }, 2500);
 })();
 </script>
 
 <script>
-// ═══ SERVICE WORKER — AUTO UPDATE ═══
+// ═══ SERVICE WORKER ═══
 if('serviceWorker' in navigator){
-  window.addEventListener('load',async()=>{
-    try{
-      const reg=await navigator.serviceWorker.register('/sw.js');
-      console.log('[Kabomo] SW registered');
-      setInterval(()=>reg.update(),60000);
-      reg.addEventListener('updatefound',()=>{
-        const nw=reg.installing;
-        nw.addEventListener('statechange',()=>{
-          if(nw.state==='installed'&&navigator.serviceWorker.controller){
-            nw.postMessage({type:'SKIP_WAITING'});
-          }
-        });
-      });
-      navigator.serviceWorker.addEventListener('message',e=>{
-        if(e.data&&e.data.type==='SW_UPDATED'){
-          console.log('[Kabomo] New version — reloading');
-          window.location.reload(true);
-        }
-      });
-      let refreshing=false;
-      navigator.serviceWorker.addEventListener('controllerchange',()=>{
-        if(!refreshing){refreshing=true;window.location.reload(true);}
-      });
-    }catch(e){console.log('[Kabomo] SW failed:',e);}
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(r){ console.log('[Kabomo] SW ok'); })
+      .catch(function(e){ console.log('[Kabomo] SW err:', e); });
   });
 }
 
