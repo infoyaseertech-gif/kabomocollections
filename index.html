@@ -350,11 +350,30 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
 .chart-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue2),var(--blue));min-height:4px;transition:height .6s ease;}
 .chart-lbl{font-size:9px;color:var(--muted);}
-.sp-download{margin-top:24px;z-index:2;animation:fadeIn .5s 1.3s both ease;}
-.sp-download a{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#c9a84c,#f0d080);color:#0a1f44;padding:12px 26px;border-radius:50px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(201,168,76,0.4);}
+
+
 </style>
 
-
+<script>
+// Register inline manifest for standalone PWA use
+const manifestData = {
+  "name": "Kabomo Collections",
+  "short_name": "Kabomo",
+  "description": "Kabomo Collections POS — Wear Love, Wear Luxury",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1f44",
+  "theme_color": "#0a1f44",
+  "categories": ["business", "finance"]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestUrl = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestUrl;
+document.head.appendChild(link);
+</script>
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/kabomo_icon_192.png">
@@ -393,7 +412,6 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
   <div class="sp-name">KABOMO COLLECTIONS</div>
   <div class="sp-div"><span class="sp-slogan">Wear Love, Wear Luxury</span></div>
   <div class="sp-dots"><div class="sp-dot a"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
-<div class="sp-download"><a href="https://drive.google.com/uc?export=download&id=1gFfq66xLsiJqYH3AFbdoBbwAzM3tgS-b" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:18px;height:18px;fill:#0a1f44;vertical-align:middle"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg> Download App</a></div>
 </div>
 
 <!-- ════ REGISTER ════ -->
@@ -873,11 +891,7 @@ const SBU='https://pelkootzjmcppuljgbqs.supabase.co',SBKEY='eyJhbGciOiJIUzI1NiIs
 const fmt=n=>'₦'+Math.round(n||0).toLocaleString();
 const fmtN=n=>{let s=String(Math.round(n||0));return s.replace(/\B(?=(\d{3})+(?!\d))/g,',');};
 const ts=()=>{const d=new Date();return d.toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'});};
-const SS=id=>{
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.display='';});
-  var el=document.getElementById(id);
-  if(el){el.classList.add('active');el.style.display='flex';}
-};
+const SS=id=>{document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.display='';});var el=document.getElementById(id);if(el){el.classList.add('active');el.style.display='flex';}};
 const OM=id=>document.getElementById(id).classList.add('show');
 const CM=(id,e)=>{if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('show');};
 const showLD=msg=>{document.getElementById('LD-txt').textContent=msg||'Loading...';document.getElementById('LD').classList.add('show');};
@@ -1441,10 +1455,43 @@ function renderHist(txns){
       +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">'
       +'<div class="hamt '+amtClass+'">'+amt+'</div>'
       +'<div class="htime">'+dstr+'</div>'
-      +'<button onclick="delHistory(''+t.id+'')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;opacity:0.5;color:#ef4444;" title="Delete">🗑</button>'
+      +'<div style="display:flex;gap:3px">'      +'<button onclick="editHist(\''+t.id+'\',\''+encodeURIComponent(t.item_name)+'\','+t.total_amount+')" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;color:#1d4ed8;opacity:0.7" title="Edit">✏️</button>'      +'<button onclick="delHistory(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;color:#ef4444;opacity:0.7" title="Delete">🗑</button>'      +'</div>'
       +'</div>'
       +'</div>';
   }).join('');
+}
+
+
+function editHist(id,encodedName,amount){
+  var name=decodeURIComponent(encodedName);
+  var ex=document.getElementById('eho');if(ex)ex.remove();
+  var ov=document.createElement('div');
+  ov.id='eho';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML='<div style="background:#1a2744;border-radius:16px;padding:24px 20px;max-width:300px;width:100%;">'
+    +'<div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;">✏️ Edit Record</div>'
+    +'<div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">Item Name</div>'
+    +'<input id="eh-n" value="'+name+'" style="width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0a1f44;color:#fff;font-size:14px;margin-bottom:12px;">'
+    +'<div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">Amount (&#8358;)</div>'
+    +'<input id="eh-a" type="number" value="'+amount+'" style="width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0a1f44;color:#fff;font-size:14px;margin-bottom:16px;">'
+    +'<div style="display:flex;gap:10px;">'
+    +'<button onclick="document.getElementById(\'eho\').remove()" style="flex:1;padding:11px;border-radius:8px;border:1.5px solid #334155;background:none;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>'
+    +'<button id="eh-sv" style="flex:1;padding:11px;border-radius:8px;border:none;background:#1d4ed8;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  document.getElementById('eh-sv').onclick=async function(){
+    var newName=document.getElementById('eh-n').value.trim();
+    var newAmt=parseFloat(document.getElementById('eh-a').value)||0;
+    if(!newName){toast('Name cannot be empty');return;}
+    ov.remove();toast('Saving...');
+    try{
+      await sb('kc_transactions?id=eq.'+id,{method:'PATCH',body:JSON.stringify({item_name:newName,total_amount:newAmt}),prefer:'return=minimal'});
+      var idx=A.txns.findIndex(function(x){return String(x.id)===String(id);});
+      if(idx>=0){A.txns[idx].item_name=newName;A.txns[idx].total_amount=newAmt;}
+      renderHist(A.txns);toast('Record updated!');
+    }catch(e){toast('Error: '+e.message);}
+  };
 }
 
 function delHistory(id){
@@ -1728,103 +1775,24 @@ function addChat(type,text,time){
 // ═══ INIT ═══
 (function init(){
   setTimeout(function(){
-    document.querySelectorAll('.screen').forEach(function(s){
-      s.classList.remove('active');
-      s.style.display='';
-    });
-    var login = document.getElementById('s-login');
-    if(login){ login.classList.add('active'); login.style.display='flex'; }
-    var email = localStorage.getItem('kc_email');
-    var emailInput = document.getElementById('li-email');
-    if(email && emailInput) emailInput.value = email;
-  }, 2500);
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.display='';});
+    var login=document.getElementById('s-login');
+    if(login){login.classList.add('active');login.style.display='flex';}
+    var email=localStorage.getItem('kc_email');
+    var ei=document.getElementById('li-email');
+    if(email&&ei)ei.value=email;
+  },2500);
 })();
 </script>
 
 <script>
-// ═══ SERVICE WORKER ═══
 if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
+  window.addEventListener('load',function(){
     navigator.serviceWorker.register('/sw.js')
-      .then(function(r){ console.log('[Kabomo] SW ok'); })
-      .catch(function(e){ console.log('[Kabomo] SW err:', e); });
+      .then(function(r){console.log('[Kabomo] SW ok');})
+      .catch(function(e){console.log('[Kabomo] SW err:',e);});
   });
 }
-
-// ═══ PWA INSTALL PROMPT ═══
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Show install banner after 3 seconds if not installed
-  setTimeout(() => {
-    if (deferredPrompt) showInstallBanner();
-  }, 3000);
-});
-
-function showInstallBanner() {
-  const banner = document.createElement('div');
-  banner.id = 'install-banner';
-  banner.style.cssText = `
-    position:fixed;bottom:90px;left:14px;right:14px;z-index:1000;
-    background:linear-gradient(135deg,#0a1f44,#1a3a72);
-    border-radius:14px;padding:14px 16px;
-    display:flex;align-items:center;gap:12px;
-    box-shadow:0 8px 32px rgba(10,31,68,.4);
-    animation:slideUp .3s ease;
-  `;
-  banner.innerHTML = `
-    <img src="kabomo_icon_192.png" style="width:42px;height:42px;border-radius:10px;flex-shrink:0" alt="icon">
-    <div style="flex:1">
-      <div style="font-size:13px;font-weight:600;color:#fff;font-family:Outfit,sans-serif">Install Kabomo Collections</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Add to home screen for best experience</div>
-    </div>
-    <div style="display:flex;gap:8px;flex-shrink:0">
-      <button onclick="dismissInstall()" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-family:Outfit,sans-serif;cursor:pointer">Later</button>
-      <button onclick="triggerInstall()" style="background:#c9a84c;color:#0a1f44;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;font-family:Outfit,sans-serif;cursor:pointer">Install</button>
-    </div>
-  `;
-  document.body.appendChild(banner);
-}
-
-function triggerInstall() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(choice => {
-    if (choice.outcome === 'accepted') {
-      const b = document.getElementById('install-banner');
-      if (b) b.remove();
-    }
-    deferredPrompt = null;
-  });
-}
-
-function dismissInstall() {
-  const b = document.getElementById('install-banner');
-  if (b) b.remove();
-}
-
-window.addEventListener('appinstalled', () => {
-  const b = document.getElementById('install-banner');
-  if (b) b.remove();
-  deferredPrompt = null;
-  console.log('Kabomo Collections installed!');
-});
-
-// ═══ OFFLINE DETECTION ═══
-function updateOnlineStatus() {
-  const banner = document.getElementById('OFFLINE');
-  if (banner) {
-    if (!navigator.onLine) {
-      banner.classList.add('show');
-    } else {
-      banner.classList.remove('show');
-    }
-  }
-}
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
 </script>
 
 </body>
