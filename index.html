@@ -352,6 +352,31 @@ body{display:flex;justify-content:center;align-items:center;min-height:100vh;}
 .chart-lbl{font-size:9px;color:var(--muted);}
 
 
+
+/* ── INSTALL BANNER ── */
+.install-banner{
+  position:absolute;bottom:0;left:0;right:0;z-index:500;
+  background:linear-gradient(135deg,#0a1f44,#1a3a72);
+  padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 -4px 24px rgba(10,31,68,.4);
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.32,0,.67,0);
+}
+.install-banner.show{transform:translateY(0);}
+.install-banner-logo{
+  width:44px;height:44px;border-radius:10px;
+  background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;overflow:hidden;
+}
+.install-banner-logo img{width:38px;height:38px;object-fit:contain;}
+.install-banner-text{flex:1;}
+.install-banner-title{font-size:13px;font-weight:600;color:#fff;font-family:var(--fb);}
+.install-banner-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;font-family:var(--fb);}
+.install-banner-btns{display:flex;gap:8px;flex-shrink:0;}
+.ib-later{background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-family:var(--fb);cursor:pointer;}
+.ib-install{background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;font-family:var(--fb);cursor:pointer;}
 </style>
 
 <script>
@@ -402,6 +427,22 @@ document.head.appendChild(link);
   <div class="success-txt" id="SUC-txt">Sale Recorded!</div>
   <div class="success-sub" id="SUC-sub">Receipt ready</div>
 </div>
+
+<!-- INSTALL BANNER -->
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-logo">
+    <img id="ib-logo" src="" alt="Kabomo">
+  </div>
+  <div class="install-banner-text">
+    <div class="install-banner-title">Install Kabomo Collections</div>
+    <div class="install-banner-sub">Add to home screen for best experience</div>
+  </div>
+  <div class="install-banner-btns">
+    <button class="ib-later" onclick="dismissInstall()">Later</button>
+    <button class="ib-install" onclick="triggerInstall()">Install</button>
+  </div>
+</div>
+
 <div class="offline-banner" id="OFFLINE">📡 No internet connection — changes will sync when you're back online</div>
 
 <!-- ════ SPLASH ════ -->
@@ -1793,6 +1834,87 @@ if('serviceWorker' in navigator){
       .catch(function(e){console.log('[Kabomo] SW err:',e);});
   });
 }
+
+
+// ═══ PWA INSTALL PROMPT ═══
+(function(){
+  // Set install banner logo same as splash logo
+  var splashImg = document.querySelector('.sp-logo img');
+  var ibLogo = document.getElementById('ib-logo');
+  if(splashImg && ibLogo) ibLogo.src = splashImg.src;
+
+  var deferredPrompt = null;
+  var banner = document.getElementById('install-banner');
+  var dismissed = localStorage.getItem('kc_install_dismissed');
+  var installed = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
+  // Don't show if already installed or dismissed recently
+  if(installed){ console.log('[PWA] Already installed'); return; }
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show banner after 3 seconds if not dismissed in last 3 days
+    var lastDismiss = parseInt(dismissed||0);
+    var threeDays = 3*24*60*60*1000;
+    if(!dismissed || (Date.now()-lastDismiss) > threeDays){
+      setTimeout(function(){
+        if(banner) banner.classList.add('show');
+      }, 3000);
+    }
+  });
+
+  window.triggerInstall = function(){
+    if(!deferredPrompt){ 
+      toast('To install: tap the browser menu → Add to Home Screen');
+      if(banner) banner.classList.remove('show');
+      return; 
+    }
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(choice){
+      if(choice.outcome==='accepted'){
+        if(banner) banner.classList.remove('show');
+        toast('✅ Kabomo Collections installed!');
+      }
+      deferredPrompt = null;
+    });
+  };
+
+  window.dismissInstall = function(){
+    if(banner) banner.classList.remove('show');
+    localStorage.setItem('kc_install_dismissed', Date.now().toString());
+  };
+
+  window.addEventListener('appinstalled', function(){
+    if(banner) banner.classList.remove('show');
+    deferredPrompt = null;
+    toast('✅ App installed successfully!');
+  });
+
+  // iOS Safari fallback — show banner manually since iOS doesn't fire beforeinstallprompt
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isInStandaloneMode = window.navigator.standalone;
+  if(isIOS && !isInStandaloneMode){
+    var lastDismiss = parseInt(dismissed||0);
+    var threeDays = 3*24*60*60*1000;
+    if(!dismissed || (Date.now()-lastDismiss) > threeDays){
+      setTimeout(function(){
+        if(banner){
+          // Change install button text for iOS
+          var installBtn = banner.querySelector('.ib-install');
+          if(installBtn) installBtn.textContent = 'How?';
+          window.triggerInstall = function(){
+            banner.classList.remove('show');
+            toast('Tap Share button → then "Add to Home Screen"');
+          };
+          banner.classList.add('show');
+        }
+      }, 3000);
+    }
+  }
+})();
+
 </script>
 
 </body>
